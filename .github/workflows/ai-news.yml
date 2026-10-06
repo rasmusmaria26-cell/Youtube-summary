@@ -58,10 +58,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          TARGET_BRANCH="${{ github.ref_name || 'main' }}"
+          git fetch origin "${TARGET_BRANCH}"
+          git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
           git add data/processed_videos.json summaries/
           if git diff --staged --quiet; then
             echo "No state or summary changes to commit."
           else
             git commit -m "chore: update processed videos state [skip ci]"
-            git push
+            git push origin "${TARGET_BRANCH}" || (git pull --rebase origin "${TARGET_BRANCH}" && git push origin "${TARGET_BRANCH}")
           fi

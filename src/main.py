@@ -176,6 +176,19 @@ def run_pipeline(config: Config) -> dict[str, int]:
                 # 14. Mark as processed ONLY after successful upload
                 processed_ids.add(video.video_id)
                 save_processed_videos(config.processed_videos_path, processed_ids)
+                try:
+                    rel_state_path = config.processed_videos_path.relative_to(config.base_dir).as_posix()
+                    with open(config.processed_videos_path, "r", encoding="utf-8") as sf:
+                        state_json_str = sf.read()
+                    github_client.commit_file(
+                        repo_path=rel_state_path,
+                        content=state_json_str,
+                        commit_message=f"chore: record processed video {video.video_id} [skip ci]",
+                        overwrite=True,
+                    )
+                except Exception as sync_err:
+                    logger.debug("Remote state sync over API: %s", sync_err)
+
                 print("✓ Marked as processed")
                 processed_count += 1
                 logger.info("Successfully processed and recorded video %s.", video.video_id)
