@@ -41,11 +41,11 @@ jobs:
       - name: Run AI News Summarizer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-2.5-flash' }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-3.5-flash-lite' }}
           YOUTUBE_CHANNEL_ID: ${{ vars.YOUTUBE_CHANNEL_ID || secrets.YOUTUBE_CHANNEL_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_OWNER: ${{ github.repository_owner }}
-          GITHUB_REPO: ${{ github.event.repository.name }}
+          GITHUB_REPO: ${{ github.event.repository.name || 'Youtube-summary' }}
           GITHUB_BRANCH: ${{ github.ref_name || 'main' }}
           MAX_VIDEOS_PER_RUN: ${{ vars.MAX_VIDEOS_PER_RUN || '3' }}
           MAX_CHUNK_SIZE: '30000'

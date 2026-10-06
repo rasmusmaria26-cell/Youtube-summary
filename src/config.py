@@ -73,8 +73,18 @@ def load_config(env_file: Path | str | None = None) -> Config:
         youtube_proxy=(os.getenv("YOUTUBE_PROXY", "") or os.getenv("HTTPS_PROXY", "")).strip(),
         youtube_cookie_path=os.getenv("YOUTUBE_COOKIE_PATH", "cookies.txt").strip(),
         github_token=os.getenv("GITHUB_TOKEN", "").strip(),
-        github_owner=os.getenv("GITHUB_OWNER", "").strip(),
-        github_repo=os.getenv("GITHUB_REPO", "").strip(),
+        github_owner=(
+            os.getenv("GITHUB_OWNER", "").strip()
+            or os.getenv("GITHUB_REPOSITORY_OWNER", "").strip()
+        ),
+        github_repo=(
+            os.getenv("GITHUB_REPO", "").strip()
+            or (
+                os.getenv("GITHUB_REPOSITORY", "").split("/")[-1]
+                if "/" in os.getenv("GITHUB_REPOSITORY", "")
+                else ""
+            )
+        ),
         github_branch=os.getenv("GITHUB_BRANCH", "main").strip() or "main",
         max_videos_per_run=_parse_int(os.getenv("MAX_VIDEOS_PER_RUN"), 3),
         max_chunk_size=_parse_int(os.getenv("MAX_CHUNK_SIZE"), 30000),
