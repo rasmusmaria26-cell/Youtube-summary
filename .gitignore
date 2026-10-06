@@ -1,0 +1,18 @@
+# AI News Video Summarizer to GitHub
+.env
+.env.local
+*.env
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.venv/
+venv/
+ENV/
+.DS_Store
+Thumbs.db
