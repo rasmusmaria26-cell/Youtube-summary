@@ -45,6 +45,7 @@ def _extract_text_from_snippets(snippets: Any) -> list[str]:
 def extract_transcript(
     video_id: str,
     languages: Iterable[str] = ("en", "en-US", "en-GB"),
+    proxy: str | None = None,
 ) -> str:
     """
     Retrieve transcript for a given video ID using youtube-transcript-api.
@@ -53,6 +54,7 @@ def extract_transcript(
     Args:
         video_id: YouTube video ID string
         languages: Preferred languages in descending order
+        proxy: Optional HTTP/HTTPS proxy URL
 
     Returns:
         Raw extracted transcript text.
@@ -68,9 +70,18 @@ def extract_transcript(
     logger.info("Attempting to retrieve transcript for video: %s (languages=%s)", video_id, lang_list)
 
     try:
+        import requests
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        })
+        if proxy:
+            session.proxies = {"http": proxy, "https": proxy}
+
         # Support both modern (1.2+) instance-based API and legacy static method
         try:
-            ytt = YouTubeTranscriptApi()
+            ytt = YouTubeTranscriptApi(http_client=session)
             transcript_list = ytt.list(video_id)
         except (AttributeError, TypeError):
             transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)

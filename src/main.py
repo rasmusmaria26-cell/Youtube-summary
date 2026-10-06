@@ -105,7 +105,7 @@ def run_pipeline(config: Config) -> dict[str, int]:
 
         try:
             # 7. Transcript Extraction
-            raw_transcript = extract_transcript(video.video_id)
+            raw_transcript = extract_transcript(video.video_id, proxy=config.youtube_proxy)
             print("✓ Transcript retrieved")
 
             # 8. Clean Transcript
@@ -165,12 +165,13 @@ def run_pipeline(config: Config) -> dict[str, int]:
                 logger.info("Successfully processed and recorded video %s.", video.video_id)
 
         except TranscriptUnavailableError as e:
-            logger.error("ERROR: Transcript unavailable for video %s: %s", video.video_id, e.reason)
-            print(f"✗ Skipped: Transcript unavailable ({e.reason})")
+            first_line = e.reason.strip().splitlines()[0] if e.reason else "Unavailable"
+            logger.error("ERROR: Transcript unavailable for video %s: %s", video.video_id, first_line)
+            print(f"✗ Skipped: Transcript unavailable ({first_line})")
             failed_count += 1
         except SummarizerError as e:
             logger.error("ERROR: Gemini summarization failed for video %s: %s", video.video_id, e)
-            print(f"✗ Failed: Gemini summarization error")
+            print("✗ Failed: Gemini summarization error")
             failed_count += 1
         except Exception as e:
             logger.error("ERROR: Unexpected failure processing video %s: %s", video.video_id, e)
@@ -182,6 +183,12 @@ def run_pipeline(config: Config) -> dict[str, int]:
 
 def main() -> None:
     """CLI entrypoint."""
+    # Ensure Windows console handles UTF-8 checkmarks safely
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     config = load_config()
     stats = run_pipeline(config)
 
