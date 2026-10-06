@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Python314\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:\\Users\\lumaa\\AppData\\Roaming\\Python\\Python314\\site-packages",
+    "C:\\Python314\\Lib\\site-packages"
+  ]
+}

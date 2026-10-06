@@ -64,7 +64,7 @@ def load_config(env_file: Path | str | None = None) -> Config:
     if env_file:
         load_dotenv(dotenv_path=env_file, override=True)
     else:
-        load_dotenv(override=False)
+        load_dotenv(override=True)
 
     return Config(
         gemini_api_key=os.getenv("GEMINI_API_KEY", "").strip(),
