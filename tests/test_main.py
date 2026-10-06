@@ -92,7 +92,48 @@ def test_pipeline_skips_already_processed_videos(tmp_path: Path):
         assert stats["failed"] == 0
 
 
-def test_pipeline_handles_transcript_unavailable_gracefully(tmp_path: Path):
+def test_pipeline_falls_back_to_gemini_video_url(tmp_path: Path):
+    config = Config(
+        youtube_channel_id="UC_TEST",
+        gemini_api_key="fake_key",
+        dry_run=True,
+        base_dir=tmp_path,
+        data_dir=tmp_path / "data",
+        processed_videos_path=tmp_path / "data" / "processed_videos.json",
+        summaries_dir=tmp_path / "summaries",
+    )
+
+    sample_videos = [
+        VideoMetadata(
+            video_id="vid_fallback",
+            title="Video With Blocked Caption",
+            published_date="2026-10-06T10:00:00Z",
+            video_url="https://youtube.com/watch?v=vid_fallback",
+            channel_name="AI Channel",
+        )
+    ]
+
+    mock_summary = NewsSummary(
+        title="Video With Blocked Caption",
+        summary="A summary generated via Gemini native video understanding.",
+        topics=[],
+        key_takeaways=["Takeaway from video"],
+        companies_mentioned=[],
+        technologies_mentioned=[],
+        notes="",
+    )
+
+    with patch("src.main.fetch_channel_videos", return_value=sample_videos), \
+         patch("src.main.extract_transcript", side_effect=TranscriptUnavailableError("vid_fallback", "IP Blocked")), \
+         patch("src.main.GeminiSummarizer.summarize_from_video_url", return_value=mock_summary):
+
+        stats = run_pipeline(config)
+        assert stats["processed"] == 1
+        assert stats["skipped"] == 0
+        assert stats["failed"] == 0
+
+
+def test_pipeline_handles_all_sources_failing_gracefully(tmp_path: Path):
     config = Config(
         youtube_channel_id="UC_TEST",
         gemini_api_key="fake_key",
@@ -114,7 +155,8 @@ def test_pipeline_handles_transcript_unavailable_gracefully(tmp_path: Path):
     ]
 
     with patch("src.main.fetch_channel_videos", return_value=sample_videos), \
-         patch("src.main.extract_transcript", side_effect=TranscriptUnavailableError("vid_no_transcript", "Disabled")):
+         patch("src.main.extract_transcript", side_effect=TranscriptUnavailableError("vid_no_transcript", "Disabled")), \
+         patch("src.main.GeminiSummarizer.summarize_from_video_url", side_effect=Exception("Gemini failed")):
 
         stats = run_pipeline(config)
         assert stats["processed"] == 0

@@ -89,7 +89,12 @@ class GeminiSummarizer:
         # Initialize Google GenAI Client
         self.client = genai.Client(api_key=self.api_key)
 
-    def _call_gemini_with_retry(self, contents: str, max_retries: int = 3, response_schema: Any = None) -> str:
+    def _call_gemini_with_retry(
+        self,
+        contents: str | list[Any],
+        max_retries: int = 3,
+        response_schema: Any = None,
+    ) -> str:
         """Call Gemini API with exponential backoff on transient errors."""
         from google.genai import types
 
@@ -134,6 +139,24 @@ class GeminiSummarizer:
                     break
 
         raise SummarizerError(f"Gemini API failed after {max_retries} attempts: {last_error}")
+
+    def summarize_from_video_url(self, video_url: str, video_title: str = "") -> NewsSummary:
+        """
+        Fallback summarization directly from YouTube video URL via Gemini native video understanding
+        when caption scraping is blocked by YouTube's anti-bot filters.
+        """
+        from google.genai import types
+
+        logger.info("Using Gemini native video understanding for: %s", video_url)
+        video_part = types.Part.from_uri(file_uri=video_url, mime_type="video/*")
+        prompt = (
+            f"Video Title: {video_title}\n\n"
+            "Analyze the contents, spoken audio dialogue, and key developments of this video. "
+            "Produce the final structured AI news summary adhering strictly to the JSON schema."
+        )
+
+        raw_output = self._call_gemini_with_retry([video_part, prompt], response_schema=NewsSummary)
+        return self._parse_and_validate(raw_output, f"Video URL: {video_url}", video_title)
 
     def summarize_chunk(self, chunk_text: str, chunk_index: int, total_chunks: int) -> str:
         """Summarize an intermediate chunk when dealing with very long transcripts."""

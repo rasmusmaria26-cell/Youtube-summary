@@ -104,25 +104,37 @@ def run_pipeline(config: Config) -> dict[str, int]:
         logger.info("--- Processing [%d/%d]: '%s' (ID: %s) ---", idx, total_to_process, video.title, video.video_id)
 
         try:
-            # 7. Transcript Extraction
-            raw_transcript = extract_transcript(
-                video.video_id,
-                proxy=config.youtube_proxy,
-                cookie_path=config.youtube_cookie_path,
-            )
-            print("✓ Transcript retrieved")
+            # 7. Transcript Extraction with fallback
+            summary: NewsSummary | None = None
+            try:
+                raw_transcript = extract_transcript(
+                    video.video_id,
+                    proxy=config.youtube_proxy,
+                    cookie_path=config.youtube_cookie_path,
+                )
+                print("✓ Transcript retrieved")
 
-            # 8. Clean Transcript
-            cleaned_transcript = clean_transcript(raw_transcript)
-            if not cleaned_transcript:
-                raise TranscriptUnavailableError(video.video_id, "Cleaned transcript is empty")
-            print("✓ Transcript cleaned")
+                # 8. Clean Transcript
+                cleaned_transcript = clean_transcript(raw_transcript)
+                if not cleaned_transcript:
+                    raise TranscriptUnavailableError(video.video_id, "Cleaned transcript is empty")
+                print("✓ Transcript cleaned")
 
-            # 9. Chunk if necessary
-            chunks = chunk_transcript(cleaned_transcript, max_chunk_size=config.max_chunk_size)
+                # 9. Chunk if necessary
+                chunks = chunk_transcript(cleaned_transcript, max_chunk_size=config.max_chunk_size)
 
-            # 10. Gemini AI Summarization
-            summary = summarizer.summarize(chunks, video_title=video.title)
+                # 10. Gemini AI Summarization from transcript
+                summary = summarizer.summarize(chunks, video_title=video.title)
+            except TranscriptUnavailableError as t_err:
+                first_line = t_err.reason.strip().splitlines()[0] if t_err.reason else "Unavailable"
+                logger.info(
+                    "Caption scraping blocked/unavailable for video %s (%s). Engaging Gemini native video understanding.",
+                    video.video_id,
+                    first_line,
+                )
+                print("ℹ Caption scraping blocked by YouTube; engaging Gemini native video analysis...")
+                summary = summarizer.summarize_from_video_url(video.video_url, video_title=video.title)
+
             print("✓ Gemini summary generated")
 
             # 11. Markdown Generation

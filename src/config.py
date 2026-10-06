@@ -12,7 +12,7 @@ class Config:
 
     # Google Gemini
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"
 
     # YouTube
     youtube_channel_id: str = ""
@@ -68,7 +68,7 @@ def load_config(env_file: Path | str | None = None) -> Config:
 
     return Config(
         gemini_api_key=os.getenv("GEMINI_API_KEY", "").strip(),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash",
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip() or "gemini-3.5-flash-lite",
         youtube_channel_id=os.getenv("YOUTUBE_CHANNEL_ID", "").strip(),
         youtube_proxy=(os.getenv("YOUTUBE_PROXY", "") or os.getenv("HTTPS_PROXY", "")).strip(),
         youtube_cookie_path=os.getenv("YOUTUBE_COOKIE_PATH", "cookies.txt").strip(),
