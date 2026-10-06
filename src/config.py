@@ -26,7 +26,7 @@ class Config:
     github_branch: str = "main"
 
     # Execution controls
-    max_videos_per_run: int = 3
+    max_videos_per_run: int = 1
     max_chunk_size: int = 30000
     log_level: str = "INFO"
     dry_run: bool = False
@@ -86,7 +86,7 @@ def load_config(env_file: Path | str | None = None) -> Config:
             )
         ),
         github_branch=os.getenv("GITHUB_BRANCH", "main").strip() or "main",
-        max_videos_per_run=_parse_int(os.getenv("MAX_VIDEOS_PER_RUN"), 3),
+        max_videos_per_run=_parse_int(os.getenv("MAX_VIDEOS_PER_RUN"), 1),
         max_chunk_size=_parse_int(os.getenv("MAX_CHUNK_SIZE"), 30000),
         log_level=os.getenv("LOG_LEVEL", "INFO").strip().upper() or "INFO",
         dry_run=_parse_bool(os.getenv("DRY_RUN"), False),

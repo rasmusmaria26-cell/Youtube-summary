@@ -64,8 +64,8 @@ def run_pipeline(config: Config) -> dict[str, int]:
         logger.info("All %d videos from feed are already processed.", len(videos))
         return {"processed": 0, "skipped": skipped_count, "failed": 0}
 
-    # 5. Sort chronologically (oldest to newest) to maintain natural timeline
-    unprocessed_videos.sort(key=lambda v: v.published_date)
+    # 5. Sort chronologically (newest first) to prioritize the latest release
+    unprocessed_videos.sort(key=lambda v: v.published_date, reverse=True)
 
     # 6. Apply MAX_VIDEOS_PER_RUN throttle
     target_videos = unprocessed_videos[: config.max_videos_per_run]

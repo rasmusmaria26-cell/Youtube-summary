@@ -47,7 +47,7 @@ jobs:
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name || 'Youtube-summary' }}
           GITHUB_BRANCH: ${{ github.ref_name || 'main' }}
-          MAX_VIDEOS_PER_RUN: ${{ vars.MAX_VIDEOS_PER_RUN || '3' }}
+          MAX_VIDEOS_PER_RUN: ${{ vars.MAX_VIDEOS_PER_RUN || '1' }}
           MAX_CHUNK_SIZE: '30000'
           LOG_LEVEL: 'INFO'
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
