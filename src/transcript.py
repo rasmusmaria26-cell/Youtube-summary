@@ -46,6 +46,7 @@ def extract_transcript(
     video_id: str,
     languages: Iterable[str] = ("en", "en-US", "en-GB"),
     proxy: str | None = None,
+    cookie_path: str | None = None,
 ) -> str:
     """
     Retrieve transcript for a given video ID using youtube-transcript-api.
@@ -55,6 +56,7 @@ def extract_transcript(
         video_id: YouTube video ID string
         languages: Preferred languages in descending order
         proxy: Optional HTTP/HTTPS proxy URL
+        cookie_path: Optional path to Mozilla/Netscape cookies.txt
 
     Returns:
         Raw extracted transcript text.
@@ -70,6 +72,7 @@ def extract_transcript(
     logger.info("Attempting to retrieve transcript for video: %s (languages=%s)", video_id, lang_list)
 
     try:
+        from pathlib import Path
         import requests
         session = requests.Session()
         session.headers.update({
@@ -78,6 +81,16 @@ def extract_transcript(
         })
         if proxy:
             session.proxies = {"http": proxy, "https": proxy}
+
+        if cookie_path and Path(cookie_path).is_file():
+            import http.cookiejar
+            try:
+                jar = http.cookiejar.MozillaCookieJar(cookie_path)
+                jar.load(ignore_discard=True, ignore_expires=True)
+                session.cookies = jar
+                logger.info("Loaded YouTube cookies from: %s", cookie_path)
+            except Exception as ce:
+                logger.warning("Failed to load cookie file %s: %s", cookie_path, ce)
 
         # Support both modern (1.2+) instance-based API and legacy static method
         try:

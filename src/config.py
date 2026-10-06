@@ -17,6 +17,7 @@ class Config:
     # YouTube
     youtube_channel_id: str = ""
     youtube_proxy: str = ""
+    youtube_cookie_path: str = ""
 
     # GitHub
     github_token: str = ""
@@ -70,6 +71,7 @@ def load_config(env_file: Path | str | None = None) -> Config:
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash",
         youtube_channel_id=os.getenv("YOUTUBE_CHANNEL_ID", "").strip(),
         youtube_proxy=(os.getenv("YOUTUBE_PROXY", "") or os.getenv("HTTPS_PROXY", "")).strip(),
+        youtube_cookie_path=os.getenv("YOUTUBE_COOKIE_PATH", "cookies.txt").strip(),
         github_token=os.getenv("GITHUB_TOKEN", "").strip(),
         github_owner=os.getenv("GITHUB_OWNER", "").strip(),
         github_repo=os.getenv("GITHUB_REPO", "").strip(),

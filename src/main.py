@@ -105,7 +105,11 @@ def run_pipeline(config: Config) -> dict[str, int]:
 
         try:
             # 7. Transcript Extraction
-            raw_transcript = extract_transcript(video.video_id, proxy=config.youtube_proxy)
+            raw_transcript = extract_transcript(
+                video.video_id,
+                proxy=config.youtube_proxy,
+                cookie_path=config.youtube_cookie_path,
+            )
             print("✓ Transcript retrieved")
 
             # 8. Clean Transcript
