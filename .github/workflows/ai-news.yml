@@ -2,8 +2,8 @@ name: AI News Video Summarizer
 
 on:
   schedule:
-    # Runs daily at 09:30 AM IST (04:00 AM UTC)
-    - cron: '0 4 * * *'
+    # Runs daily at ~09:35 AM IST (04:05 AM UTC) - off-minute avoids GitHub :00 queue delays
+    - cron: '5 4 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
